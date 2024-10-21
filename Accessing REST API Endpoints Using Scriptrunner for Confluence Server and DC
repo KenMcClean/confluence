@@ -1,0 +1,27 @@
+#An example script of how to access REST API resources using ScriptRunner for Confluence Server/DC
+
+import java.net.HttpURLConnection
+import java.net.URL
+import import groovy.json.JsonSlurper
+
+def apiUrl = 'https://<jira-url>.com/rest/api/content/search?cql=macro+%3D+"<macroName>"'
+try {
+    URL url = new URL(apiUrl)
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection()
+    connection.setRequestMethod("GET")
+    connection.setRequestProperty("Content-Type", "application/json")
+    int responseCode = connection.getResponseCode()
+    if (responseCode == HttpURLConnection.HTTP_OK) {
+        def response = connection.inputStream.text
+        def jsonSlurper = new JsonSlurper()
+        def jsonResponse = jsonSlurper.parseText(response)
+    } else {
+        log.error("Error calling the API. Response Code: $responseCode")
+    }
+    connection.disconnect()
+} catch (Exception e) {
+    log.error("An error occurred: ${e}")
+}
+jsonResponse.results.each{macroResult ->
+log.warn(macroResult)
+}
