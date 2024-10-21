@@ -1,5 +1,4 @@
-# confluence
-Tools for Confluence Server/DC and Confluence Cloud
+# Script List:
 
 ## Accessing REST API Endpoints Using Scriptrunner for Confluence Server and DC
 A basic example of how to access REST API resources, using ScriptRunner for Confluence server/DC
