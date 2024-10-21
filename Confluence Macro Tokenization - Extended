@@ -1,0 +1,103 @@
+import java.net.HttpURLConnection
+import java.net.URL
+import groovy.json.JsonSlurper
+import com.atlassian.sal.api.component.ComponentLocator
+import com.atlassian.confluence.spaces.SpaceManager
+import com.atlassian.confluence.pages.PageManager
+import com.atlassian.confluence.pages.Page
+
+// Initialize page manager
+def pageManager = ComponentLocator.getComponent(PageManager)
+
+// Macro configuration
+def macroName = "macro-name"
+def structuredMacroPattern = /<ac:structured-macro ac:name="${macroName}" .*?<\/ac:structured-macro>/
+
+// API configuration
+def apiUrl = "https://<confluence-url>/rest/api/content/search?cql=macro+%3D+%22${macroName}%22&size=1000&limit=1000"
+def maxItems = 1  // Set to a low number for testing, higher for batch processing
+def jsonResponse = ""
+
+// Fetch macro usage info using REST API
+try {
+    URL url = new URL(apiUrl)
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection()
+    connection.setRequestMethod("GET")
+    connection.setRequestProperty("Content-Type", "application/json")
+
+    int responseCode = connection.getResponseCode()
+    if (responseCode == HttpURLConnection.HTTP_OK) {
+        def response = connection.inputStream.text
+                def jsonSlurper = new JsonSlurper()
+        jsonResponse = jsonSlurper.parseText(response)
+    } else {
+        log.error("Error calling REST API. Response Code: $responseCode")
+    }
+    connection.disconnect()
+} catch (Exception e) {
+    log.error("An error occurred: ${e.message}", e)
+}
+
+log.warn("Total number of pages with this macro: ${jsonResponse.results.size()}")
+
+maxItems = jsonResponse.results.size()
+// Set the maximum items processed to the number of pages returned
+
+// Get page objects
+def pages = jsonResponse.results.take(maxItems)
+
+def matchResults = []
+
+//Process page objects
+pages.each { pageResult ->
+    def pageExists = false
+    //Assume the page does not exist, until proven otherwise
+    def page = null
+
+    try {
+        page = pageManager.getPage(pageResult.id) // Replace with `pageResult.id as Long` in real use
+        if(page){
+            pageExists = true
+        }
+    } catch (Exception pageFetch) {
+        log.warn("Error fetching page with ID ${pageResult.id}")
+    }
+    if (pageExists) {
+        try {
+            def bodyContent = page.getBodyContent()
+            // Get the body content of the page
+            // This will be a storage object, not a string
+
+            def macroMatcher = bodyContent.properties.toString() =~ structuredMacroPattern
+                    //Compare the body of the page as a string against the regex statement declared earlier
+
+                    if (macroMatcher) {
+                        // If a match is found
+                        macroMatcher.each{ match ->
+                            // Iterate through the matches
+                            def value = match.toString()
+                            def tokenizedValues = value.split('>')
+                            // Split the macro into its constituent pieces
+                            def tokenIndexPos = 0
+                            tokenizedValues.each{tokenValue ->
+                                log.warn("${tokenValue} is at position ${tokenIndexPos}")
+                                tokenIndexPos++
+                                // Iterate through the components of the macro and note the index position of each
+                            }
+
+                            if(tokenizedValues[0].split("<")[0] == "Project is in progress"){
+                                matchResults.add("${page.title} has the target macro containing the specified value")
+                            }
+                            // Here's one example of how you'd remove extraneous information attached to the component
+                        }
+                    } else {
+                        log.warn("No macro value found in macro for page '${page.title}'")
+                    }
+        } catch (Exception e) {
+            log.warn("Encountered an error processing macro ${macroName} on page '${pageResult.title}': ${e.message}", e)
+        }
+    }
+}
+
+print("There are ${len(matchResults)} pages with the macro and specified value:")
+return matchResults
