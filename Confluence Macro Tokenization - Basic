@@ -1,0 +1,75 @@
+//Tokenize a specific macro on a specific list of Confluence pages
+//Script is written in Groovy, intended for use with ScriptRunner on Confluence Server or Confluence DC
+
+import java.net.HttpURLConnection
+import java.net.URL
+import groovy.json.JsonSlurper
+import com.atlassian.sal.api.component.ComponentLocator
+import com.atlassian.confluence.spaces.SpaceManager
+import com.atlassian.confluence.pages.PageManager
+import com.atlassian.confluence.pages.Page
+
+// Initialize page manager
+def pageManager = ComponentLocator.getComponent(PageManager)
+
+// Macro configuration
+def macroName = "macro-name"
+def structuredMacroPattern = /<ac:structured-macro ac:name="${macroName}" .*?<\/ac:structured-macro>/
+
+// List of Page IDs for testing
+
+def pages = ["1234567", "506952234"]
+
+//Process page objects
+pages.each { pageID ->
+    def pageExists = false
+    //Assume the page does not exist, until proven otherwise
+    def page = null
+    
+    try {
+        page = pageManager.getPage(1570571422 as Long)
+        if(page){
+            pageExists = true
+        }
+    } catch (Exception pageFetch) {
+        log.warn("Error fetching page with ID ${pageID}")
+    }
+    if (pageExists) {
+        try {
+            def bodyContent = page.getBodyContent()
+            // Get the body content of the page
+            // This will be a storage object, not a string
+
+            def macroMatcher = bodyContent.properties.toString() =~ structuredMacroPattern
+                    //Compare the body of the page as a string against the regex statement declared earlier
+
+                    if (macroMatcher) {
+                        // If a match is found
+                        macroMatcher.each{ match ->
+                            // Iterate through the matches
+                            def value = match.toString()
+                            def tokenizedValues = value.split('>')
+                            //Split the macro into its constituent pieces
+                            def tokenIndexPos = 0
+                            tokenizedValues.each{tokenValue ->
+                                log.warn("${tokenValue} is at position ${tokenIndexPos}")
+                                tokenIndexPos++
+                                // Iterate through the components of the macro and note the index position of each
+                            }
+                            log.warn("${tokenizedValues[0]} is at position 0")
+                            // Here's an example of how you'd work with a specific attribute or component
+
+                            log.warn("${tokenizedValues[0].split("<")[0]} is at position 0")
+                            // Here's one example of how you'd remove extraneous information attached to the component
+
+                            log.warn("${tokenizedValues[0].split('"')[1]} is at position 0")
+                            // Here's another example of how you'd remove extraneous information attached to the component
+                        }
+                    } else {
+                        log.warn("No macro value found in macro for page '${page.title}'")
+                    }
+        } catch (Exception e) {
+            log.warn("Encountered an error processing macro ${macroName} on page '${pageID.title}': ${e.message}", e)
+        }
+    }
+}
