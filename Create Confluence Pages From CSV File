@@ -1,0 +1,97 @@
+import csv
+import requests
+import json
+import html
+import logging
+
+# Initialize logging
+logging.basicConfig(level=logging.ERROR)
+
+api_url = 'https://<url>.com/rest/api/content/'
+#What's the URL to your Confluence DC instance?
+
+
+file_path = "<your CSV file path>"
+#where is the file stored locally?
+
+parent_page_id = "<your parent page ID>"
+#Which page should the new pages be created under?
+
+
+space_key = "<your space key>"
+#What is the key of the Space in which these pages should be created?
+
+headers = {
+    'Authorization': 'Bearer <PAT>',
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+}
+#Create a set of headers to authenticate the request
+#You'll need to create a Personal Access Token in your Confluence Instance, in order to connect to it
+
+
+#Read the CSV file
+with open(file_path, 'r') as file:
+    reader = csv.reader(file)
+    rows = list(reader)
+
+
+header_row = rows[0]
+# Assume the first row is the column headings
+
+
+html_header_row = "<tr>"
+for header in header_row:
+    html_header_row += f"<th>{header}</th>"
+html_header_row += "</tr>"
+#Generate the HTML table and its first row
+
+
+
+for row in rows[1:]:
+#Generate the HTML from the CSV rows, but skip the first row
+    
+    
+    page_title = row[0]
+    #We assume that the title of each page is stored in the first cell in each row
+    
+    
+    html_row = "<tr>"
+    for value in row:
+        html_row += f"<td>{value}</td>"
+    html_row += "</tr>"
+    #Add the HTML to the row object
+
+    # Generate the complete HTML table
+    html_table = f"<table>{html_header_row}{html_row}</table>"
+    #Add the complete list of rows to the table
+
+   
+    page_data = {
+        "type": "page",
+        "title": page_title,
+        "ancestors": [{
+            "id": parent_page_id
+        }],
+        "space": {
+            "key": space_key
+        },
+        "body": {
+            "storage": {
+                "value": html_table,
+                "representation": "storage"
+            }
+        }
+    }
+    #Define the JSON that will be sent to create the Confluence page
+    
+
+    response = requests.post(api_url, headers=headers, json=page_data)
+    #Send the POST request
+
+    if response.status_code == 200:
+        logging.info(f'Confluence page "{page_title}" created successfully.')
+    else:
+        logging.error(f'Failed to create Confluence page "{page_title}".')
+        logging.error('Status code: %s', response.status_code)
+        logging.error('Error: %s', response.text)
