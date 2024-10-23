@@ -32,3 +32,10 @@ See https://www.kennethmcclean.com/blog/creating-confluence-users-what-the-heck-
 This Python script takes a CSV file as a input, and creates Confluence pages based on the structure of the CSV
 
 Keywords: Confluence, REST API, Page Creation, Python, CSV Processing
+
+### Identify Unlinked Confluence Pages Within a Space
+Identify all pages within a Confluence DC space that aren't linked to any other page
+
+Keywords: Confluence DC, ScriptRunner, Page Management
+
+See https://www.kennethmcclean.com/blog/identifying-unlinked-confluence-pages-within-a-space/ for more information
