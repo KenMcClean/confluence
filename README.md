@@ -21,6 +21,12 @@ Keywords: Confluence DC, Confluence Server, Macro, ScriptRunner, Groovy
 
 See https://www.kennethmcclean.com/blog/tokenization-of-confluence-user-macros-as-a-vector-of-meta-analysis/ for more information
 
+### Create a Confluence User With ScriptRunner
+This Groovy script uses the concept of a User Template in Confluence to create a user programatically
+
+Keywords: User Management, User Creation, Confluence Server, Confluence DC, Groovy, ScriptRunner
+
+
 ### Create Confluence Pages From CSV File
 This Python script takes a CSV file as a input, and creates Confluence pages based on the structure of the CSV
 
