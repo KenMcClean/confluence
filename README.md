@@ -26,6 +26,7 @@ This Groovy script uses the concept of a User Template in Confluence to create a
 
 Keywords: User Management, User Creation, Confluence Server, Confluence DC, Groovy, ScriptRunner
 
+See https://www.kennethmcclean.com/blog/creating-confluence-users-what-the-heck-is-a-user-template/ for more information
 
 ### Create Confluence Pages From CSV File
 This Python script takes a CSV file as a input, and creates Confluence pages based on the structure of the CSV
