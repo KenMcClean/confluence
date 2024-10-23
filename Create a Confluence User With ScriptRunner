@@ -1,0 +1,13 @@
+//Script to create a Confluence Server/DC user, using a user template
+
+import com.atlassian.confluence.api.model.people.User
+import com.atlassian.sal.api.component.ComponentLocator
+import com.atlassian.confluence.user.UserAccessor
+import com.atlassian.user.impl.DefaultUser
+import com.atlassian.user.security.password.Credential
+ 
+def userAccessor = ComponentLocator.getComponent(UserAccessor)
+ 
+def user = userAccessor.createUser(new DefaultUser("kenm", "Ken McClean", "ken@email.com"), Credential.unencrypted("password"));
+ 
+return user
