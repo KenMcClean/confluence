@@ -1,0 +1,27 @@
+//Identify all pages in a Confluence DC space that are not linked to any other page
+
+import com.atlassian.confluence.pages.PageManager
+import com.atlassian.confluence.spaces.SpaceManager
+import com.atlassian.sal.api.component.ComponentLocator
+
+def pageManager = ComponentLocator.getComponent(PageManager)
+def spaceManager = ComponentLocator.getComponent(SpaceManager)
+
+def targetSpace = spaceManager.getSpace("<Space Key>")
+def spacePages = pageManager.getPages(targetSpace, true)
+def targetPage = pageManager.getPage(<page ID as Long>)
+
+def outgoingLinks = targetPage.outgoingLinks.collect { link -> 
+
+link.toString().minus("ds:")
+}
+
+spacePages.each {
+  page ->
+
+    if (!outgoingLinks.contains(page.title)) {
+
+      log.warn("${page.title} is not linked to the front page")
+    }
+
+}
